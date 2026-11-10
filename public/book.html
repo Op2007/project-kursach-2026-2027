@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Книга — Каталог</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-logo">
+        <a href="index.html"><img src="img/logo (2).png" alt="logo"></a>
+    </div>
+    <ul class="nav-links">
+        <li><a href="index.html">о нас</a></li>
+        <li><a href="catalog.html">книги</a></li>
+        <li><a href="#">сопутствующие товары</a></li>
+    </ul>
+    <div class="search-box">
+        <input type="text" placeholder="найти книгу">
+        <div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+    </div>
+    <div class="nav-icons">
+        <div class="nav-icon" onclick="window.location.href='cart.html'">
+            <img src="img/ларец.png" alt="basket">
+            <span class="cart-badge" id="cartBadge">0</span>
+        </div>
+        <div class="nav-icon" onclick="window.location.href='profile.html'">
+            <img src="img/ежик-пользователь.png" alt="user">
+        </div>
+    </div>
+</nav>
+
+<main class="book-page" id="bookPage"></main>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <button class="lightbox-close" onclick="closeLightbox(event)">✕</button>
+    <img src="" alt="Полный размер" id="lightboxImg">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentBook = null;
+let currentFormat = 'text';
+
+function getBookIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return parseInt(params.get('id'));
+}
+
+async function loadBook(id) {
+  try {
+    const res = await fetch(`/api/books/${id}`);
+    const data = await res.json();
+    if (data.success) {
+      currentBook = data.book;
+      // Преобразуем tags из строки/массива
+      if (typeof currentBook.tags === 'string') {
+        try { currentBook.tags = JSON.parse(currentBook.tags); } catch { currentBook.tags = []; }
+      }
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function updateCartBadge() {
+  try {
+    const res = await fetch('/api/cart');
+    const data = await res.json();
+    if (data.success) {
+      const count = data.cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      const badge = document.getElementById('cartBadge');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+      }
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function addToCart(btnElement) {
+  if (!currentBook) return;
+  try {
+    const res = await fetch('/api/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookId: currentBook.id, quantity: 1 })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (btnElement) {
+        btnElement.textContent = '✓ Добавлено';
+        btnElement.classList.add('added');
+        showToast(`«${currentBook.title}» добавлена в корзину`, 'success');
+        setTimeout(() => { btnElement.textContent = 'Добавить в корзину'; btnElement.classList.remove('added'); }, 2000);
+      }
+      updateCartBadge();
+    } else {
+      alert('Ошибка: ' + (data.message || 'Не авторизован'));
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function buyAndDownload() {
+  if (!currentBook) return;
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: [{ bookId: currentBook.id, quantity: 1 }] })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Покупка «${currentBook.title}» оформлена!`, 'success');
+    } else {
+      alert('Ошибка: ' + (data.message || 'Не авторизован'));
+    }
+  } catch (e) { console.error(e); }
+}
+
+function openLightbox() {
+  if (!currentBook || !currentBook.image) return;
+  document.getElementById('lightboxImg').src = currentBook.image;
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(event) {
+  if (event.target.id === 'lightbox' || event.target.classList.contains('lightbox-close')) {
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { document.getElementById('lightbox').classList.remove('active'); document.body.style.overflow = ''; }
+});
+
+function selectFormat(btn) {
+  document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFormat = btn.dataset.format;
+  showToast(`Выбран формат: ${currentFormat === 'text' ? 'текст' : 'аудио'}`);
+}
+
+function readFragment() { if (currentBook) showToast(`Открываем фрагмент «${currentBook.title}»...`, 'success'); }
+
+function shareBook() {
+  if (!currentBook) return;
+  if (navigator.share) navigator.share({ title: currentBook.title, text: `Посмотри книгу "${currentBook.title}" от ${currentBook.author}`, url: window.location.href });
+  else { navigator.clipboard.writeText(window.location.href); showToast('Ссылка скопирована в буфер обмена', 'success'); }
+}
+
+function showToast(message, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+async function renderBookPage() {
+  const bookId = getBookIdFromUrl();
+  await loadBook(bookId);
+  const bookPage = document.getElementById('bookPage');
+  if (!currentBook) {
+    bookPage.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 80px 20px;"><div style="font-size: 5rem; opacity: 0.5; margin-bottom: 20px;">📚</div><div style="font-family: var(--font-script-title); font-size: 32px; margin-bottom: 20px;">Книга не найдена</div><a href="catalog.html" style="color: var(--color-accent-gold); font-family: var(--font-script-text); font-size: 20px;">← Вернуться в каталог</a></div>`;
+    return;
+  }
+  document.title = `${currentBook.title} — ${currentBook.author}`;
+  const tags = Array.isArray(currentBook.tags) ? currentBook.tags : [];
+  const tagsHTML = tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+  bookPage.innerHTML = `
+    <aside class="book-cover-section">
+      <div class="book-cover-wrapper" onclick="openLightbox()">
+        ${currentBook.image ? `<img src="${currentBook.image}" alt="${currentBook.title}">` : `<div class="book-cover-placeholder">📖</div>`}
+      </div>
+      <button class="btn-fragment" onclick="readFragment()">читать фрагмент</button>
+    </aside>
+    <section class="book-info-section">
+      <h1 class="book-title">${currentBook.title}</h1>
+      <p class="book-author">${currentBook.author}</p>
+      <div class="formats">
+        <button class="format-btn active" data-format="text" onclick="selectFormat(this)"><span class="format-icon"><img src="img/text.png" alt="text"></span><span>текст</span></button>
+        <button class="format-btn" data-format="audio" onclick="selectFormat(this)"><span class="format-icon"><img src="img/audio.png" alt="audio"></span><span>аудио</span></button>
+      </div>
+      <h2 class="about-title">О книге</h2>
+      <div class="tags-block">
+        <div class="tags-title">Теги книги</div>
+        <div class="tags-list">${tagsHTML}</div>
+      </div>
+      <div class="annotation-block">
+        <div class="annotation-title">Аннотация</div>
+        <p class="annotation-text">${currentBook.annotation || 'Аннотация отсутствует.'}</p>
+      </div>
+    </section>
+    <aside class="book-purchase-section">
+      <div class="purchase-header">
+        <div class="book-price">${currentBook.price} ₽</div>
+        <button class="share-btn" onclick="shareBook()" title="Поделиться">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+      </div>
+      <div class="purchase-buttons">
+        <button class="btn-buy" onclick="buyAndDownload()">купить и скачать</button>
+        <button class="btn-cart" id="addToCartBtn" onclick="addToCart(this)">добавить в корзину</button>
+      </div>
+    </aside>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', () => { renderBookPage(); updateCartBadge(); });
+</script>
+</body>
+</html>

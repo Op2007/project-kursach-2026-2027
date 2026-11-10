@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Ларец — Книжный магазин</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="has-ornament">
+
+<!-- Навигация -->
+<nav class="navbar">
+    <div class="nav-logo">
+        <a href="index.html"><img src="img/logo (2).png" alt="logo"></a>
+    </div>
+    <ul class="nav-links">
+        <li><a href="index.html">о нас</a></li>
+        <li><a href="catalog.html" class="active">книги</a></li>
+        <li><a href="#">сопутствующие товары</a></li>
+    </ul>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="найти книгу">
+        <div class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+    </div>
+    <div class="nav-icons">
+        <div class="nav-icon" onclick="window.location.href='cart.html'">
+            <img src="img/ларец.png" alt="basket">
+        </div>
+        <div class="nav-icon" onclick="window.location.href='profile.html'">
+            <img src="img/ежик-пользователь.png" alt="user">
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>
+            <span class="line1">тёмная полка</span>
+            <span class="line2">тёплых историй</span>
+        </h1>
+        <img src="img/bird.png" id="snoska" alt="bird">
+        <p>Тысячи книг: читай онлайн, покупай в пару кликов или забирай в ближайшем пункте. Тёмный интерфейс для тех, кто читает ночью.</p>
+        <div class="hero-buttons">
+            <a href="catalog.html" class="btn btn-primary">читать онлайн</a>
+            <a href="catalog.html" class="btn btn-orange">найти книгу</a>
+        </div>
+    </div>
+    <div class="hero-note">
+        <img src="img/notebook.png" alt="notebook">
+                    <div class="note-text">
+                <span class="highlight">12 000+ книг</span>
+                Онлайн и офлайн<br>
+                Без подписки<br>
+                «СамоВывоз»,<br>
+                «Чтение в браузере»
+            </div>
+    </div>
+    
+
+</section>
+<div class="ornament-divider"></div>
+
+<!-- Подборки -->
+<section class="section">
+    <h2 class="section-title">наши подборки</h2>
+    <div class="collections-grid">
+        <div class="collection-card" onclick="window.location.href='catalog.html?filter=new'">
+            <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=200&h=300&fit=crop" alt="Новинки">
+            <h3>новинки</h3>
+            <p>Свежие книги на полках онлайн</p>
+        </div>
+        <div class="collection-card" onclick="window.location.href='catalog.html?filter=exclusive'">
+            <h3>эксклюзивы</h3>
+            <p>Самые лимитированные тиражи</p>
+        </div>
+        <div class="collection-card" onclick="window.location.href='catalog.html?filter=hits'">
+            <h3>хиты</h3>
+            <p>Выбор читателей и редакции</p>
+        </div>
+        <div class="collection-card" onclick="window.location.href='catalog.html?filter=soon'">
+            <h3>скоро</h3>
+            <p>Самые ожидаемые книги</p>
+        </div>
+        <div class="collection-card" onclick="window.location.href='catalog.html?filter=classic'">
+            <h3>классика</h3>
+            <p>Всегда актуально</p>
+        </div>
+    </div>
+</section>
+
+<!-- Бестселлеры -->
+<section class="section">
+    <h2 class="section-title">бестселлеры</h2>
+    <div class="bestsellers-wrapper">
+        <div class="bestsellers-track" id="bestsellersTrack"></div>
+    </div>
+    <div class="carousel-controls">
+        <button class="carousel-btn" onclick="moveCarousel(-1)">‹</button>
+        <button class="carousel-btn" onclick="moveCarousel(1)">›</button>
+    </div>
+</section>
+
+<!-- Читают сейчас -->
+<section class="section">
+    <h2 class="section-title">читают сейчас</h2>
+    <div class="bookshelf" id="bookshelf"></div>
+</section>
+
+<!-- Популярные авторы -->
+<section class="section">
+    <h2 class="section-title">популярные авторы</h2>
+    <div class="authors-grid">
+        <div class="author-card">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Vladimir_Mayakovsky_1929.jpg/220px-Vladimir_Mayakovsky_1929.jpg" alt="Маяковский" class="author-photo">
+            <div class="author-info">
+                <h3>владимир маяковский</h3>
+                <p>Поэт-футурист, автор «Облака в штанах» и «Про это»</p>
+            </div>
+        </div>
+        <div class="author-card">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Mikhail_Lermontov_by_Pyotr_Zabolotsky_%281837%29.jpg/220px-Mikhail_Lermontov_by_Pyotr_Zabolotsky_%281837%29.jpg" alt="Лермонтов" class="author-photo">
+            <div class="author-info">
+                <h3>михаил лермонтов</h3>
+                <p>Автор «Героя нашего времени» и «Демона»</p>
+            </div>
+        </div>
+        <div class="author-card">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Alexander_Blok_1907.jpg/220px-Alexander_Blok_1907.jpg" alt="Блок" class="author-photo">
+            <div class="author-info">
+                <h3>александр блок</h3>
+                <p>Поэт-символист, автор «Двенадцати» и «Незнакомки»</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Аудиокниги -->
+<section class="section">
+    <h2 class="section-title">популярные аудиокниги</h2>
+    <div class="audiobooks-grid">
+        <div class="audiobook-card" onclick="window.location.href='book.html?id=1'">
+            <div class="audiobook-cover"></div>
+            <div class="audiobook-info">
+                <div>
+                    <h3>название книги</h3>
+                    <div class="author">автор</div>
+                    <div class="duration">12 ч. 30 мин.</div>
+                </div>
+                <button class="play-btn">▶</button>
+            </div>
+        </div>
+        <div class="audiobook-card" onclick="window.location.href='book.html?id=2'">
+            <div class="audiobook-cover"></div>
+            <div class="audiobook-info">
+                <div>
+                    <h3>название книги</h3>
+                    <div class="author">автор</div>
+                    <div class="duration">8 ч. 15 мин.</div>
+                </div>
+                <button class="play-btn">▶</button>
+            </div>
+        </div>
+        <div class="audiobook-card" onclick="window.location.href='book.html?id=3'">
+            <div class="audiobook-cover"></div>
+            <div class="audiobook-info">
+                <div>
+                    <h3>название книги</h3>
+                    <div class="author">автор</div>
+                    <div class="duration">15 ч. 45 мин.</div>
+                </div>
+                <button class="play-btn">▶</button>
+            </div>
+        </div>
+        <div class="audiobook-card" onclick="window.location.href='book.html?id=4'">
+            <div class="audiobook-cover"></div>
+            <div class="audiobook-info">
+                <div>
+                    <h3>название книги</h3>
+                    <div class="author">автор</div>
+                    <div class="duration">10 ч. 20 мин.</div>
+                </div>
+                <button class="play-btn">▶</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Цифры -->
+<section class="section stats-section">
+    <h2 class="section-title">ларец в цифрах</h2>
+    <p class="stats-subtitle">давайте расти и развиваться вместе. поддержите нас своими покупками.</p>
+    <div class="stats-grid">
+        <div class="stat-item"><div class="stat-number">0</div><div class="stat-label">лет на книжном рынке</div></div>
+        <div class="stat-item"><div class="stat-number">67</div><div class="stat-label">постоянных покупателей</div></div>
+        <div class="stat-item"><div class="stat-number">0</div><div class="stat-label">издательств в партнёрстве</div></div>
+        <div class="stat-item"><div class="stat-number">33</div><div class="stat-label">литературных жанра</div></div>
+        <div class="stat-item"><div class="stat-number">0</div><div class="stat-label">дней доставки по стране</div></div>
+        <div class="stat-item"><div class="stat-number">0</div><div class="stat-label">филиалов в городах России</div></div>
+    </div>
+</section>
+
+<!-- Футер -->
+<footer>
+    <div class="footer-content">
+        <div class="footer-links">
+            <a href="#">бестселлеры</a>
+            <a href="#">эксклюзивы</a>
+            <a href="#">о компании</a>
+            <a href="#">аудиокниги</a>
+            <a href="#">новинки</a>
+        </div>
+        <div class="footer-social">
+            <h3>мы в соцсетях!</h3>
+            <div class="social-icons">
+                <a href="#" class="social-icon"><img src="img/Telegram App.png" alt="telegram"></a>
+                <a href="#" class="social-icon"><img src="img/VKontakte.png" alt="VK"></a>
+                <a href="#" class="social-icon"><img src="img/Yandex Zen.png" alt="dzen"></a>
+                <a href="#" class="social-icon"><img src="img/Odnoklassniki.png" alt="odnokl"></a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+let booksData = [];
+let shelfBooks = [
+  { id: 1, title: 'ПРЕСТУПЛЕНИЕ И НАКАЗАНИЕ', author: 'Ф.М. ДОСТОЕВСКИЙ', color: '#2d5a2d', height: 280 },
+  { id: 2, title: 'СКАЗКИ', author: 'А.С. ПУШКИН', color: '#9b59b6', height: 240 },
+  { id: 3, title: 'МЁРТВЫЕ ДУШИ', author: 'Н.В. ГОГОЛЬ', color: '#2c3e50', height: 260 },
+  { id: 4, title: 'ДОМ, В КОТОРОМ...', author: 'М. ПЕТРОСЯН', color: '#27ae60', height: 300 },
+  { id: 5, title: '1984', author: 'ДЖ. ОРУЭЛЛ', color: '#8b1f2a', height: 220 },
+  { id: 6, title: 'ТВОЁ СЕРДЦЕ БУДЕТ РАЗБИТО', author: 'А. ДЖЕЙН', color: '#9b59b6', height: 270 },
+  { id: 7, title: 'Ю. НЕГРИТЯТ', author: 'А. КРИСТИ', color: '#16a085', height: 200 },
+  { id: 8, title: 'МЫ', author: 'Е.И. ЗАМЯТИН', color: '#8e44ad', height: 250 },
+  { id: 9, title: 'ВОЙНА И МИР', author: 'Л.Н. ТОЛСТОЙ', color: '#b87333', height: 290 },
+  { id: 10, title: 'ТОЛСТЫЙ И ТОНКИЙ', author: 'А.П. ЧЕХОВ', color: '#d4c94a', height: 230 }
+];
+
+async function loadBooks() {
+  try {
+    const res = await fetch('/api/books');
+    const data = await res.json();
+    if (data.success) booksData = data.books;
+  } catch (e) { console.error(e); }
+}
+
+function renderBestsellers() {
+  const track = document.getElementById('bestsellersTrack');
+  if (!track) return;
+  track.innerHTML = booksData.map(book => `
+    <div class="bestseller-card" onclick="window.location.href='book.html?id=${book.id}'">
+      <div class="bestseller-cover">
+        <img src="${book.image}" alt="${book.title}">
+        <div class="bestseller-annotation"><p>${book.annotation || ''}</p></div>
+      </div>
+      <div class="bestseller-title">${book.title}</div>
+      <div class="bestseller-actions">
+        <a href="book.html?id=${book.id}" class="btn-details" onclick="event.stopPropagation()">ПОДРОБНЕЕ</a>
+        <button class="icon-btn" onclick="event.stopPropagation(); addToFavorites(${book.id})">♡</button>
+        <button class="icon-btn" onclick="event.stopPropagation(); addToCart(${book.id})">🛒</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+let carouselPosition = 0;
+function moveCarousel(direction) {
+  const track = document.getElementById('bestsellersTrack');
+  const cardWidth = 245;
+  const maxPosition = -(booksData.length - 4) * cardWidth;
+  carouselPosition += direction * -cardWidth;
+  if (carouselPosition > 0) carouselPosition = 0;
+  if (carouselPosition < maxPosition) carouselPosition = maxPosition;
+  track.style.transform = `translateX(${carouselPosition}px)`;
+}
+setInterval(() => {
+  const track = document.getElementById('bestsellersTrack');
+  if (!track) return;
+  const cardWidth = 245;
+  const maxPosition = -(booksData.length - 4) * cardWidth;
+  carouselPosition += -cardWidth;
+  if (carouselPosition < maxPosition) carouselPosition = 0;
+  track.style.transform = `translateX(${carouselPosition}px)`;
+}, 5000);
+
+function renderBookshelf() {
+  const shelf = document.getElementById('bookshelf');
+  if (!shelf) return;
+  shelf.innerHTML = shelfBooks.map(book => `
+    <div class="shelf-book" onclick="window.location.href='book.html?id=${book.id}'">
+      <div class="shelf-book-tooltip">
+        <h4>${book.title}</h4>
+        <p>${book.author}</p>
+      </div>
+      <div class="shelf-book-spine" style="background: ${book.color}; height: ${book.height}px;">
+        <div class="author">${book.author}</div>
+        <div class="title">${book.title}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addToCart(bookId) {
+  try {
+    const res = await fetch('/api/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookId, quantity: 1 })
+    });
+    const data = await res.json();
+    if (data.success) alert('Книга добавлена в корзину!');
+    else alert('Ошибка: ' + (data.message || 'Не авторизован'));
+  } catch (e) { console.error(e); }
+}
+
+function addToFavorites(bookId) { alert('Книга добавлена в избранное!'); }
+
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+  searchInput.addEventListener('input', (e) => {
+    if (e.target.value.toLowerCase().length > 2) {
+      window.location.href = `catalog.html?search=${encodeURIComponent(e.target.value)}`;
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadBooks();
+  renderBestsellers();
+  renderBookshelf();
+});
+</script>
+</body>
+</html>

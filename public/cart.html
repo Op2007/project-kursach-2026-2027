@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Корзина — Книжный магазин</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar">
+    <div class="nav-logo">
+        <a href="index.html"><img src="img/logo (2).png" alt="logo"></a>
+    </div>
+    <ul class="nav-links">
+        <li><a href="index.html">о нас</a></li>
+        <li><a href="catalog.html">книги</a></li>
+        <li><a href="#">сопутствующие товары</a></li>
+    </ul>
+    <div class="search-box">
+        <input type="text" placeholder="найти книгу">
+        <div class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+    </div>
+    <div class="nav-icons">
+        <div class="nav-icon">
+            <img src="img/ларец.png" alt="basket">
+        </div>
+        <div class="nav-icon">
+            <img src="img/ежик-пользователь.png" alt="user">
+        </div>
+    </div>
+</nav>
+
+<!-- Страница корзины -->
+<main class="cart-page">
+    <h1 class="cart-title">корзина</h1>
+    <div class="cart-layout" id="cartLayout">
+        <!-- Сюда вставится содержимое через JS -->
+    </div>
+</main>
+
+<script>
+const cartLayout = document.getElementById('cartLayout');
+let cartItems = [];
+
+async function loadCart() {
+  try {
+    const res = await fetch('/api/cart');
+    const data = await res.json();
+    if (data.success) cartItems = data.cart;
+    else cartItems = [];
+  } catch (e) { console.error(e); cartItems = []; }
+}
+
+async function updateQuantity(bookId, quantity) {
+  try {
+    const res = await fetch('/api/cart/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookId, quantity })
+    });
+    const data = await res.json();
+    if (data.success) {
+      await loadCart();
+      renderCart();
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function removeFromCart(bookId) {
+  await updateQuantity(bookId, 0);
+}
+
+function calculateTotal() {
+  return cartItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * (item.quantity || 1), 0);
+}
+
+async function renderCart() {
+  if (cartItems.length === 0) {
+    cartLayout.innerHTML = `
+      <div class="empty-cart">
+        <div class="empty-cart-icon">📚</div>
+        <div class="empty-cart-text">ваша корзина пуста</div>
+        <div class="empty-cart-actions">
+          <a href="catalog.html" class="btn-continue" style="width: auto; padding: 14px 30px;">продолжить покупки</a>
+        </div>
+      </div>`;
+    return;
+  }
+  const total = calculateTotal();
+  const itemsHTML = cartItems.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-cover">
+        ${item.image ? `<img src="${item.image}" alt="${item.title}">` : `<div class="cart-item-cover-placeholder">📖</div>`}
+      </div>
+      <div class="cart-item-info">
+        <div class="cart-item-title">${item.title || 'название книги'}</div>
+        <div class="cart-item-author">${item.author || 'автор'}</div>
+        <div class="cart-item-format">
+          <img src='img/text.png'>
+          текст
+        </div>
+        <div class="cart-item-actions">
+          <div class="cart-item-quantity">
+            <button onclick="updateQuantity(${item.book_id}, ${item.quantity - 1})">-</button>
+            <span>${item.quantity}</span>
+            <button onclick="updateQuantity(${item.book_id}, ${item.quantity + 1})">+</button>
+          </div>
+          <div class="cart-item-price">${(parseFloat(item.price) * item.quantity).toFixed(2)} ₽</div>
+          <button class="cart-item-remove" onclick="removeFromCart(${item.book_id})">Удалить</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  const summaryItemsHTML = cartItems.map(item => `
+    <div class="summary-item">
+      <span class="summary-item-name">${item.title || 'Товар'} × ${item.quantity}</span>
+      <span class="summary-item-price">${(parseFloat(item.price) * item.quantity).toFixed(2)} ₽</span>
+    </div>
+  `).join('');
+  cartLayout.innerHTML = `
+    <div class="cart-items">
+      ${itemsHTML}
+      <a href="catalog.html" class="btn-continue" style="margin-top: 20px;">продолжить покупки</a>
+    </div>
+    <div class="cart-summary">
+      <div class="summary-items">${summaryItemsHTML}</div>
+      <div class="summary-divider"></div>
+      <div class="summary-total">
+        <span>итого:</span>
+        <span class="summary-total-amount">${total.toFixed(2)} ₽</span>
+      </div>
+      <button class="btn-checkout" onclick="goToCheckout()">перейти к оплате</button>
+    </div>`;
+}
+
+async function goToCheckout() {
+  if (cartItems.length === 0) { alert('Корзина пуста!'); return; }
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`Заказ оформлен! Номер: ${data.orderId}\nСумма: ${data.totalAmount} ₽`);
+      await loadCart();
+      renderCart();
+    } else {
+      alert('Ошибка: ' + (data.message || 'Не авторизован'));
+    }
+  } catch (e) { console.error(e); }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadCart();
+  renderCart();
+});
+</script>
+</body>
+</html>

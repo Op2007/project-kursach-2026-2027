@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Книги — Каталог</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-logo">
+        <a href="index.html"><img src="img/logo (2).png" alt="logo"></a>
+    </div>
+    <ul class="nav-links">
+        <li><a href="index.html">о нас</a></li>
+        <li><a href="catalog.html" class="active">книги</a></li>
+        <li><a href="#">сопутствующие товары</a></li>
+    </ul>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="найти книгу">
+        <div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+    </div>
+    <div class="nav-icons">
+        <div class="nav-icon" onclick="window.location.href='cart.html'">
+            <img src="img/ларец.png" alt="basket">
+            <span class="cart-badge" id="cartBadge">0</span>
+        </div>
+        <div class="nav-icon" onclick="window.location.href='profile.html'">
+            <img src="img/ежик-пользователь.png" alt="user">
+        </div>
+    </div>
+</nav>
+
+<main class="catalog-page">
+    <h1 class="catalog-title" id="catalogTitle">Все книги</h1>
+    <div class="books-grid" id="booksGrid"></div>
+</main>
+
+<script>
+let booksData = [];
+
+async function loadBooks() {
+  try {
+    const res = await fetch('/api/books');
+    const data = await res.json();
+    if (data.success) booksData = data.books;
+  } catch (e) { console.error(e); }
+}
+
+async function updateCartBadge() {
+  try {
+    const res = await fetch('/api/cart');
+    const data = await res.json();
+    if (data.success) {
+      const count = data.cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      const badge = document.getElementById('cartBadge');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+      }
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function addToCart(bookId, btnElement, event) {
+  event.stopPropagation();
+  try {
+    const res = await fetch('/api/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookId, quantity: 1 })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (btnElement) {
+        btnElement.textContent = '✓ Добавлено';
+        btnElement.classList.add('added');
+        setTimeout(() => { btnElement.textContent = 'В корзину'; btnElement.classList.remove('added'); }, 1500);
+      }
+      updateCartBadge();
+    } else {
+      alert('Ошибка: ' + (data.message || 'Не авторизован'));
+    }
+  } catch (e) { console.error(e); }
+}
+
+function normalizeText(text) { return text.toLowerCase().replace(/ё/g, 'е'); }
+
+function renderBooks(query = '') {
+  const normalizedQuery = normalizeText(query.trim());
+  const filtered = booksData.filter(book => {
+    if (!normalizedQuery) return true;
+    return normalizeText(book.title).includes(normalizedQuery) || normalizeText(book.author).includes(normalizedQuery);
+  });
+  const catalogTitle = document.getElementById('catalogTitle');
+  if (normalizedQuery) catalogTitle.innerHTML = `Результат поиска по запросу <span>"${query.trim()}"</span>`;
+  else catalogTitle.innerHTML = `Все книги`;
+  const booksGrid = document.getElementById('booksGrid');
+  if (filtered.length === 0) {
+    booksGrid.innerHTML = `<div class="empty-results"><div class="empty-results-icon">📚</div><div class="empty-results-text">Ничего не найдено</div><div class="empty-results-sub">Попробуйте изменить запрос</div></div>`;
+    return;
+  }
+  booksGrid.innerHTML = filtered.map(book => `
+    <div class="book-card" onclick="window.location.href='book.html?id=${book.id}'">
+      ${book.image ? `<img src="${book.image}" alt="${book.title}" class="book-card-cover">` : `<div class="book-card-placeholder">📖</div>`}
+      <div class="book-card-overlay" onclick="event.stopPropagation()">
+        <div class="book-card-title">${book.title}</div>
+        <div class="book-card-author">${book.author}</div>
+        <div class="book-card-footer">
+          <div class="book-card-price">${book.price} ₽</div>
+          <button class="btn-add-cart" onclick="addToCart(${book.id}, this, event)">В корзину</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('searchInput').addEventListener('input', (e) => renderBooks(e.target.value));
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadBooks();
+  renderBooks();
+  updateCartBadge();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Личный кабинет — Книжный магазин</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-logo">
+        <a href="index.html"><img src="img/logo (2).png" alt="logo"></a>
+    </div>
+    <ul class="nav-links">
+        <li><a href="index.html">о нас</a></li>
+        <li><a href="catalog.html">книги</a></li>
+        <li><a href="#">сопутствующие товары</a></li>
+    </ul>
+    <div class="search-box">
+        <input type="text" placeholder="найти книгу">
+        <div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+    </div>
+    <div class="nav-icons">
+        <div class="nav-icon" onclick="window.location.href='cart.html'">
+            <img src="img/ларец.png" alt="basket">
+        </div>
+        <div class="nav-icon" onclick="window.location.href='profile.html'">
+            <img src="img/ежик-пользователь.png" alt="user">
+        </div>
+    </div>
+</nav>
+
+<main class="profile-section">
+    <div class="profile-header">
+        <div class="profile-left">
+            <div class="avatar-wrapper" onclick="openAvatarModal()">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%239a9aaa'/%3E%3Ctext x='50' y='55' text-anchor='middle' font-size='40' fill='white'%3E👤%3C/text%3E%3C/svg%3E" alt="Аватар" class="avatar" id="userAvatar">
+                <div class="avatar-edit-hint">Нажмите для изменения</div>
+            </div>
+            <div class="profile-info">
+                <div class="nickname-wrapper">
+                    <span class="nickname" id="nicknameDisplay">никнейм</span>
+                    <input type="text" class="nickname-input" id="nicknameInput" placeholder="Введите никнейм">
+                    <button class="edit-nickname-btn" onclick="toggleNicknameEdit()" title="Изменить никнейм">✎</button>
+                </div>
+                <div class="total-books">Всего книг: <span id="totalBooksCount">0</span></div>
+            </div>
+        </div>
+        <div class="profile-actions">
+            <button class="profile-btn" onclick="window.location.href='catalog.html'">купить книгу</button>
+            <button class="profile-btn secondary" onclick="openPromoModal()">ввести промокод</button>
+        </div>
+    </div>
+
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab active" data-tab="all" onclick="switchTab('all')">мой ларчик</button>
+            <button class="tab" data-tab="read" onclick="switchTab('read')">прочитанные книги</button>
+            <button class="tab" data-tab="saved" onclick="switchTab('saved')">отложенные книги</button>
+        </div>
+    </div>
+
+    <div class="books-grid" id="booksGrid"></div>
+</main>
+
+<div class="modal" id="promoModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closePromoModal()">✕</button>
+        <h2 class="modal-title">ввести промокод</h2>
+        <input type="text" class="modal-input" id="promoInput" placeholder="Введите промокод">
+        <button class="modal-btn" onclick="applyPromo()">Применить</button>
+    </div>
+</div>
+
+<div class="modal" id="avatarModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeAvatarModal()">✕</button>
+        <h2 class="modal-title">загрузить аватар</h2>
+        <input type="text" class="modal-input" id="avatarUrlInput" placeholder="URL изображения">
+        <button class="modal-btn" onclick="saveAvatar()">Сохранить</button>
+    </div>
+</div>
+
+<script>
+let currentUser = { nickname: 'никнейм', avatar: null };
+let libraryBooks = [];
+let currentTab = 'all';
+
+async function loadUserData() {
+  try {
+    const res = await fetch('/api/user');
+    const data = await res.json();
+    if (data.success) {
+      currentUser = data.user;
+      document.getElementById('nicknameDisplay').textContent = currentUser.nickname || 'никнейм';
+      if (currentUser.avatar) document.getElementById('userAvatar').src = currentUser.avatar;
+    } else {
+      // Не авторизован — перенаправить на вход
+      window.location.href = 'login.html';
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function loadLibrary() {
+  try {
+    const res = await fetch('/api/library');
+    const data = await res.json();
+    if (data.success) libraryBooks = data.library;
+    else libraryBooks = [];
+  } catch (e) { console.error(e); libraryBooks = []; }
+}
+
+async function saveUserData() {
+  try {
+    await fetch('/api/user', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname: currentUser.nickname, avatar: currentUser.avatar })
+    });
+  } catch (e) { console.error(e); }
+}
+
+function toggleNicknameEdit() {
+  const display = document.getElementById('nicknameDisplay');
+  const input = document.getElementById('nicknameInput');
+  if (input.classList.contains('active')) {
+    const newValue = input.value.trim();
+    if (newValue) { currentUser.nickname = newValue; display.textContent = newValue; saveUserData(); }
+    input.classList.remove('active');
+    display.classList.remove('hidden');
+  } else {
+    input.value = currentUser.nickname;
+    input.classList.add('active');
+    display.classList.add('hidden');
+    input.focus();
+  }
+}
+
+function openAvatarModal() { document.getElementById('avatarModal').classList.add('active'); }
+function closeAvatarModal() { document.getElementById('avatarModal').classList.remove('active'); }
+
+async function saveAvatar() {
+  const url = document.getElementById('avatarUrlInput').value.trim();
+  if (url) {
+    currentUser.avatar = url;
+    document.getElementById('userAvatar').src = url;
+    await saveUserData();
+    closeAvatarModal();
+  }
+}
+
+function openPromoModal() { document.getElementById('promoModal').classList.add('active'); }
+function closePromoModal() { document.getElementById('promoModal').classList.remove('active'); }
+
+function applyPromo() {
+  const code = document.getElementById('promoInput').value.trim().toUpperCase();
+  if (code) { alert(`Промокод "${code}" применен! (демо)`); closePromoModal(); }
+}
+
+function switchTab(tabName) {
+  currentTab = tabName;
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.dataset.tab === tabName) tab.classList.add('active');
+  });
+  renderBooks();
+}
+
+async function updateBookStatus(libraryId, status) {
+  try {
+    await fetch(`/api/library/${libraryId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    await loadLibrary();
+    renderBooks();
+  } catch (e) { console.error(e); }
+}
+
+function renderBooks() {
+  const grid = document.getElementById('booksGrid');
+  let books = [];
+  if (currentTab === 'all') books = libraryBooks;
+  else if (currentTab === 'read') books = libraryBooks.filter(b => b.status === 'read');
+  else if (currentTab === 'saved') books = libraryBooks.filter(b => b.status === 'saved');
+
+  if (books.length === 0) {
+    let msg = 'Здесь пока пусто';
+    if (currentTab === 'all') msg = 'В вашем ларчике пока нет книг';
+    else if (currentTab === 'read') msg = 'Вы пока не отметили ни одной прочитанной книги';
+    else if (currentTab === 'saved') msg = 'У вас нет отложенных книг';
+    grid.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-text">${msg}</div><a href="catalog.html" class="empty-state-link">Перейти в каталог</a></div>`;
+    return;
+  }
+  grid.innerHTML = books.map(book => `
+    <div class="book-card" onclick="window.location.href='book.html?id=${book.book_id || book.id}'">
+      ${book.image ? `<img src="${book.image}" alt="${book.title}">` : `<div class="book-card-placeholder">📖</div>`}
+      <div class="book-card-overlay">
+        <div class="book-card-title">${book.title}</div>
+        <div class="book-card-author">${book.author}</div>
+        <div class="book-card-status" onclick="event.stopPropagation()">
+          <select onchange="updateBookStatus(${book.id}, this.value)">
+            <option value="purchased" ${book.status === 'purchased' ? 'selected' : ''}>Куплено</option>
+            <option value="read" ${book.status === 'read' ? 'selected' : ''}>Прочитано</option>
+            <option value="saved" ${book.status === 'saved' ? 'selected' : ''}>Отложено</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateTotalBooks() { document.getElementById('totalBooksCount').textContent = libraryBooks.length; }
+
+window.onclick = function(event) {
+  if (event.target.classList.contains('modal')) event.target.classList.remove('active');
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserData();
+  await loadLibrary();
+  renderBooks();
+  updateTotalBooks();
+});
+</script>
+</body>
+</html>

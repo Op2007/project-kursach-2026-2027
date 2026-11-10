@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мастер и Маргарита — Книжный магазин</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar">
+    <div class="nav-logo">
+        <a href="index.html"><img src="img/logo (2).png" alt="logo"></a>
+    </div>
+    <ul class="nav-links">
+        <li><a href="index.html">о нас</a></li>
+        <li><a href="catalog.html">книги</a></li>
+        <li><a href="#">сопутствующие товары</a></li>
+    </ul>
+    <div class="search-box">
+        <input type="text" placeholder="найти книгу">
+        <div class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+    </div>
+    <div class="nav-icons">
+        <div class="nav-icon">
+            <img src="img/ларец.png" alt="basket">
+        </div>
+        <div class="nav-icon">
+            <img src="img/ежик-пользователь.png" alt="user">
+        </div>
+    </div>
+</nav>
+
+<!-- Страница книги -->
+<main class="book-page">
+    <!-- Левая колонка -->
+    <aside class="book-cover-section">
+        <div class="book-cover-wrapper" id="coverWrapper" onclick="openLightbox()">
+            <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop"
+                 alt="Мастер и Маргарита"
+                 id="bookCover">
+        </div>
+        <button class="btn-fragment" onclick="readFragment()">читать фрагмент</button>
+    </aside>
+
+    <!-- Центральная колонка -->
+    <section class="book-info-section">
+        <h1 class="book-title">мастер и маргарита</h1>
+        <p class="book-author">Михаил Булгаков</p>
+        
+        <div class="formats">
+            <button class="format-btn active" data-format="text" onclick="selectFormat(this)">
+                <span class="format-icon"><img src="img/text.png" alt="text"></span>
+                <span>текст</span>
+            </button>
+            <button class="format-btn" data-format="audio" onclick="selectFormat(this)">
+                <span class="format-icon"><img src="img/audio.png" alt="audio"></span>
+                <span>аудио</span>
+            </button>
+        </div>
+
+        <h2 class="about-title">О книге</h2>
+        
+        <div class="tags-block">
+            <div class="tags-title">Теги книги</div>
+            <div class="tags-list">
+                <span class="tag">Классика</span>
+                <span class="tag">Мистика</span>
+                <span class="tag">Философия</span>
+                <span class="tag">Сатира</span>
+                <span class="tag">XX век</span>
+                <span class="tag">Русская литература</span>
+                <span class="tag">Любовь</span>
+                <span class="tag">Дьявол</span>
+            </div>
+        </div>
+
+        <div class="annotation-block">
+            <div class="annotation-title">Аннотация</div>
+            <p class="annotation-text">
+                Роман Михаила Булгакова, работа над которым началась в конце 1920-х годов и продолжалась вплоть до смерти писателя.
+                В романе переплетаются три сюжетные линии: визит дьявола в Москву 1930-х годов, история Мастера и его возлюбленной Маргариты,
+                а также ершалаимские главы о Понтии Пилате и Иешуа Га-Ноцри.
+                <br><br>
+                «Мастер и Маргарита» — одно из самых загадочных и многозначных произведений русской литературы XX века.
+                Это роман о добре и зле, о трусости как главном пороке, о силе любви и творчества, о свободе и выборе.
+                Книга, которую сам Булгаков называл своим «главным трудом», была опубликована лишь через 26 лет после его смерти
+                и сразу стала культовой.
+            </p>
+        </div>
+    </section>
+
+    <!-- Правая колонка -->
+    <aside class="book-purchase-section">
+        <div class="purchase-header">
+            <div class="book-price">199 ₽</div>
+            <button class="share-btn" onclick="shareBook()" title="Поделиться">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+            </button>
+        </div>
+        <div class="purchase-buttons">
+            <button class="btn-buy" onclick="buyAndDownload()">купить и скачать</button>
+            <button class="btn-cart" id="addToCartBtn" onclick="addToCart()">добавить в корзину</button>
+        </div>
+    </aside>
+</main>
+
+<!-- Lightbox для обложки -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <button class="lightbox-close" onclick="closeLightbox(event)">✕</button>
+    <img src="https://content.img-gorod.ru/pim/products/images/36/54/0199ea73-ab4d-7c25-a06b-f05494433654.jpg" alt="Мастер и Маргарита — полный размер">
+</div>
+
+<!-- Toast уведомление -->
+<div class="toast" id="toast"></div>
+
+<script>
+let bookData = { id: 1, title: 'мастер и маргарита', author: 'Михаил Булгаков', price: 199, image: 'https://content.img-gorod.ru/pim/products/images/36/54/0199ea73-ab4d-7c25-a06b-f05494433654.jpg', format: 'text' };
+
+async function updateCartBadge() {
+  try {
+    const res = await fetch('/api/cart');
+    const data = await res.json();
+    if (data.success) {
+      const count = data.cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      const badge = document.getElementById('cartBadge');
+      if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'flex' : 'none'; }
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function addToCart() {
+  try {
+    const res = await fetch('/api/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookId: bookData.id, quantity: 1 })
+    });
+    const data = await res.json();
+    if (data.success) {
+      const btn = document.getElementById('addToCartBtn');
+      btn.textContent = '✓ Добавлено';
+      btn.classList.add('added');
+      showToast(`«${bookData.title}» добавлена в корзину`, 'success');
+      setTimeout(() => { btn.textContent = 'Добавить в корзину'; btn.classList.remove('added'); }, 2000);
+      updateCartBadge();
+    } else {
+      alert('Ошибка: ' + (data.message || 'Не авторизован'));
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function buyAndDownload() {
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: [{ bookId: bookData.id, quantity: 1 }] })
+    });
+    const data = await res.json();
+    if (data.success) showToast(`Покупка «${bookData.title}» оформлена!`, 'success');
+    else alert('Ошибка: ' + (data.message || 'Не авторизован'));
+  } catch (e) { console.error(e); }
+}
+
+function openLightbox() {
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(event) {
+  if (event.target.id === 'lightbox' || event.target.classList.contains('lightbox-close')) {
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { document.getElementById('lightbox').classList.remove('active'); document.body.style.overflow = ''; }
+});
+
+function selectFormat(btn) {
+  document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  bookData.format = btn.dataset.format;
+  showToast(`Выбран формат: ${btn.dataset.format === 'text' ? 'текст' : 'аудио'}`);
+}
+
+function readFragment() { showToast('Открываем фрагмент для чтения...', 'success'); }
+
+function shareBook() {
+  if (navigator.share) {
+    navigator.share({ title: bookData.title, text: `Посмотри книгу "${bookData.title}" от ${bookData.author}`, url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    showToast('Ссылка скопирована в буфер обмена', 'success');
+  }
+}
+
+function showToast(message, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => { toast.classList.remove('show'); }, 2500);
+}
+
+document.addEventListener('DOMContentLoaded', () => { updateCartBadge(); });
+</script>
+</body>
+</html>

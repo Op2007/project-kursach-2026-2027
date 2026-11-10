@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Регистрация — Ларец</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar">
+    <div class="nav-logo">
+        <a href="index.html"><img src="img/logo (2).png" alt="logo"></a>
+    </div>
+    <ul class="nav-links">
+        <li><a href="index.html">о нас</a></li>
+        <li><a href="catalog.html">книги</a></li>
+        <li><a href="#">сопутствующие товары</a></li>
+    </ul>
+    <div class="search-box">
+        <input type="text" placeholder="найти книгу">
+        <div class="search-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+    </div>
+    <div class="nav-icons">
+        <div class="nav-icon">
+            <img src="img/ларец.png" alt="basket">
+        </div>
+        <div class="nav-icon">
+            <img src="img/ежик-пользователь.png" alt="user">
+        </div>
+    </div>
+</nav>
+
+<div class="page-wrapper">
+    <!-- Декоративные элементы по бокам -->
+    <div class="side-ornament left">
+        <!-- Здесь можно вставить SVG орнамента -->
+    </div>
+    
+    <div class="login-card">
+        <div class="card-rooster">
+            <img src="img/petux.png" alt="petux">
+        </div>
+        <h1>регистрация</h1>
+        
+        <form id="regForm" novalidate>
+            <div class="form-group">
+                <input type="email" id="regEmail" placeholder="Введите вашу почту" autocomplete="email">
+                <div class="error-msg" id="regEmailError">Введите почту</div>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="regLogin" placeholder="Придумайте логин" autocomplete="username">
+                <div class="error-msg" id="regLoginError">Введите логин</div>
+            </div>
+            
+            <div class="form-group">
+                <input type="password" id="regPassword" placeholder="Пароль" autocomplete="new-password">
+                <div class="error-msg" id="regPasswordError">Придумайте пароль</div>
+            </div>
+            
+            <div class="form-group">
+                <input type="password" id="regPasswordConfirm" placeholder="Подтвердите пароль" autocomplete="new-password">
+                <div class="error-msg" id="regPassConfirmError">Подтвердите пароль</div>
+            </div>
+
+            <div class="perehod">
+              <p>Уже есть аккаунт?<a href="login.html">Войти!</a></p>
+            </div>
+            
+            <button type="submit" class="btn-login">зарегистрироваться</button>
+            <div class="success-msg" id="regSuccessMsg">✓ Регистрация успешна!</div>
+        </form>
+    </div>
+    
+    <div class="side-ornament right">
+        <!-- Здесь можно вставить SVG орнамента -->
+    </div>
+</div>
+
+<script>
+const form = document.getElementById('regForm');
+const emailIn = document.getElementById('regEmail');
+const loginIn = document.getElementById('regLogin');
+const passIn = document.getElementById('regPassword');
+const passConfIn = document.getElementById('regPasswordConfirm');
+const success = document.getElementById('regSuccessMsg');
+
+function validateField(input, errorId, message) {
+  const errEl = document.getElementById(errorId);
+  if (!input.value.trim()) { errEl.textContent = message; input.classList.add('error'); return false; }
+  input.classList.remove('error');
+  return true;
+}
+
+function validateEmail() {
+  const v = emailIn.value.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const errEl = document.getElementById('regEmailError');
+  if (!v) { errEl.textContent = 'Поле обязательно для заполнения'; emailIn.classList.add('error'); return false; }
+  if (!emailRegex.test(v)) { errEl.textContent = 'Введите корректный адрес электронной почты'; emailIn.classList.add('error'); return false; }
+  emailIn.classList.remove('error');
+  return true;
+}
+
+function validatePasswordMatch() {
+  if (passIn.value !== passConfIn.value) {
+    document.getElementById('regPassConfirmError').textContent = 'Пароли не совпадают';
+    passConfIn.classList.add('error');
+    return false;
+  }
+  passConfIn.classList.remove('error');
+  return true;
+}
+
+[emailIn, loginIn, passIn, passConfIn].forEach(input => {
+  input.addEventListener('input', () => input.classList.remove('error'));
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  success.classList.remove('show');
+  const okEmail = validateEmail();
+  const okLogin = validateField(loginIn, 'regLoginError', 'Логин обязателен');
+  const okPass  = validateField(passIn, 'regPasswordError', 'Пароль обязателен');
+  const okMatch = validatePasswordMatch();
+  if (okEmail && okLogin && okPass && okMatch) {
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailIn.value.trim(),
+          nickname: loginIn.value.trim(),
+          password: passIn.value
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        success.classList.add('show');
+        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+      } else {
+        alert('Ошибка: ' + (data.message || (data.errors ? data.errors.join(', ') : 'Неизвестная ошибка')));
+      }
+    } catch (err) { console.error(err); alert('Ошибка сервера'); }
+  }
+});
+</script>
+</body>
+</html>
